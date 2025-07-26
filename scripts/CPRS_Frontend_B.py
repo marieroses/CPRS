@@ -48,7 +48,7 @@ if selected_skills:
     #Define function to load sBert model and cach it for use during deployment
     @st.cache_resource
     def load_model():
-        return SentenceTransformer("all-MiniLM-L6-v2")
+        return SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
     model = load_model()
 
     #Vectorize user-selected skills
