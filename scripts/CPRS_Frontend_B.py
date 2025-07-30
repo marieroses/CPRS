@@ -43,12 +43,16 @@ for _, row in renamed_careers.iterrows():
         career_skill_map[career].add(skill)
 
 #If condition to handle exception when no skills are entered
-if selected_skills:
-    
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+if selected_skills:    
     #Vectorize user-selected skills
     model = SentenceTransformer("all-MiniLM-L6-v2")
     selected_skills_text = " ".join(selected_skills)
     selected_skills_embedding = model.encode([selected_skills_text])
+
+    #Compute cosine similarity between user skills and all careers
+    similarities = cosine_similarity(selected_skills_embedding, skills_embedding)[0]
 
     #Compute cosine similarity between user skills and all careers
     similarities = cosine_similarity(selected_skills_embedding, skills_embedding)[0]
