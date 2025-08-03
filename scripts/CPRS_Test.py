@@ -138,7 +138,7 @@ for i, row in students.iterrows():
         total_scores.append(score)
     
 overall_avg_B = sum(total_scores) / len(total_scores)
-print(f"Overall average similarity (Version B): {overall_avg_B:.2f}%")
+print(f"Overall average similarity score (Version B): {overall_avg_B:.2f}%")
 
 #Similarity scores distribution for all 100 test profiles 
 average_scores_per_student = []
@@ -162,7 +162,9 @@ plt.tight_layout()
 plt.show()
 
 #%%
-#Similarity score ranges for 20 random test profiles for different number of entered skills
+#Number of skills impact analysis
+
+#Similarity score ranges for 20 random test profiles for different number of entered skills (1-7)
 sampled_students = students.sample(n=20, random_state=10).reset_index(drop=True)
 
 ranges = []
@@ -187,16 +189,15 @@ score_ranges = (ranges_frame.groupby("Student")["Similarity Score"].agg(["min", 
 
 plt.figure(figsize=(8, 4))
 sns.barplot(data=score_ranges.sort_values("Range", ascending=False), x="Student", y="Range")
-plt.title("Similarity Score Range per Student vs. Number of Entered Skills")
+plt.title("Similarity Score Range for Different Numbers of Entered Skills per Student")
 plt.xticks(rotation=90)
 plt.ylabel("Score Range")
 plt.grid(axis='y', linestyle="--", alpha=0.7)
 plt.tight_layout()
 plt.show()
 
-#%%
-#Project number of skills needed to improve score (up to 20)
 
+#Project number of skills needed to improve score (up to 20)
 np.random.seed(10)
 
 student_profiles_2 = [{'Skills': np.random.choice(student_skills, 20, replace=False), 'Domain of Interest': np.random.choice(student_domains)}
@@ -221,7 +222,7 @@ average_scores_frame = pd.DataFrame({
 
 plt.figure(figsize=(8, 5))
 sns.lineplot(data=average_scores_frame, x="Num Skills", y="Average Similarity Score", marker="o")
-plt.title("Average Similarity Score vs. Number of Skills Entered")
+plt.title("Average Similarity Score vs. Number of Entered Skills (up to 20)")
 plt.xlabel("Number of Skills Entered")
 plt.xticks(range(1, 21)) 
 plt.ylabel("Average Similarity Score (%)")
@@ -229,4 +230,3 @@ plt.ylim(40, 80)
 plt.grid(True, linestyle="--", alpha=0.6)
 plt.tight_layout()
 plt.show()
-
