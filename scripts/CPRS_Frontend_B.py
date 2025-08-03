@@ -42,9 +42,10 @@ for _, row in renamed_careers.iterrows():
     if career and skill:
         career_skill_map[career].add(skill)
 
-#If condition to handle exception when no skills are entered
+
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
+#If condition to handle exception when no skills are entered
 if selected_skills:    
     #Vectorize user-selected skills
     model = SentenceTransformer("all-MiniLM-L6-v2")

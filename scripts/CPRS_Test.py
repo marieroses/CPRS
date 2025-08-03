@@ -5,9 +5,9 @@ import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from collections import defaultdict
 import seaborn as sns
 import matplotlib.pyplot as plt
-
 print("Libraries imported")
 
 #%%
@@ -45,80 +45,83 @@ students = pd.DataFrame(student_profiles)
 
 print(students.shape)
 #%%
-#Test App Version A
-
+#Run model for further use
 model = SentenceTransformer("all-MiniLM-L6-v2")
+print("Model run succesfully")
 
-#Define test function
+#%%
+#Version A
+
+#Recommender test function
 def Frontend_A_test(domain, skills, recommended_career, embeddings):
-    
-    #Filter out careers and their index which match with the student profile domain
     filtered_careers = recommended_career[recommended_career["Domain of Interest"] == domain]
     filtered_indices = filtered_careers.index
-
-    #Retrieving skill embeddings based on extracted career indices
     filtered_embeddings = embeddings[filtered_indices]
 
-    #Join generated test skills for each student into a single string to be passed through SentenceTransformer
     skills_string = " ".join(skills)
     user_skills_emb = model.encode([skills_string])
 
-    #Calculate cosine similarity between user skills and filtered job skills
     similarities = cosine_similarity(user_skills_emb, filtered_embeddings)[0]
-
-    #Get top 3 highest matching scores and their indices
     top_indices = similarities.argsort()[::-1][:3]
 
-    #Build list of recommendations
     recommendations = []
     for index in top_indices:
         career = filtered_careers.iloc[index]["Career Path"]
         score = similarities[index] * 100
         recommendations.append((career, score))
+
     return recommendations
 
-#Calculating average similarity score for all the profiles
-total_scores = []
-total_students = 0
+#Overall similarity scores
+all_scores = []
 
-for i, row in students.iterrows():
-    output = Frontend_A_test(row["Domain of Interest"], row["Skills"], final_careers, skills_embedding)
-    #print(f"Student {i+1} recommendations:")
-    
-    student_scores = []
-    for career, score in output:
-        #print(f" - {career} ({score:.2f}%)")
-        student_scores.append(score)
-    
-    # Accumulate scores for average calculation
-    if student_scores:  # avoid division by zero
-        total_scores.extend(student_scores)
-        total_students += 1
+for _, row in students.iterrows():
+    output = Frontend_A_test(row["Domain of Interest"],row["Skills"],final_careers,skills_embedding)
 
-# Calculate and print the average similarity score
-if total_scores:
-    average_score = sum(total_scores) / len(total_scores)
-    print(f"\nAverage similarity score across all profiles: {average_score:.2f}%")
-else:
-    print("No similarity scores found.")
+    for _, score in output:
+        all_scores.append(score)
+
+overall_avg_A = sum(all_scores) / len(all_scores)
+print(f"Overall average similarity score (Frontend A): {overall_avg_A:.2f}%")
+
+#Similarity scores by domain
+domain_similarity_scores = defaultdict(list)
+
+for _, row in students.iterrows():
+    domain = row["Domain of Interest"]
+    skills = row["Skills"]
+    output = Frontend_A_test(domain, skills, final_careers, skills_embedding)
+
+    for _, score in output:
+        domain_similarity_scores[domain].append(score)
+
+df_avg = pd.DataFrame([
+    {"Domain": domain, "Average Score": sum(scores) / len(scores)}
+    for domain, scores in domain_similarity_scores.items() if scores])
+
+df_avg_sorted = df_avg.sort_values(by="Average Score", ascending=False)
+
+plt.figure(figsize=(12, 6))
+sns.barplot(data=df_avg_sorted, x="Domain", y="Average Score")
+plt.title("Average Similarity Score by Domain (Frontend A)", fontsize=14)
+plt.ylabel("Average Similarity Score (%)")
+plt.xlabel("Domain of Interest")
+plt.xticks(rotation=45, ha='right')
+plt.ylim(0, 100)
+plt.grid(axis="y", linestyle="--", alpha=0.7)
+plt.tight_layout()
+plt.show()
 
 #%%
-#Test App Version B
+#Version B
 
-#Define test function
+#Recommender test function
 def Frontend_B_test(skills, recommended_careers, embeddings):
-    
-    #Join generated test skills for each student into a single string to be passed through SentenceTransformer
     skills_string = " ".join(skills)
     user_skills_emb = model.encode([skills_string])
-
-    #Calculate cosine similarity between user skills and filtered job skills
     similarities = cosine_similarity(user_skills_emb, embeddings)[0]
-
-    #Get top 3 highest matching scores and their indices
     top_indices = similarities.argsort()[::-1][:3]
 
-   #Build list of recommendations
     recommendations = []
     for index in top_indices:
         career = recommended_careers.iloc[index]["Career Path"]
@@ -126,27 +129,35 @@ def Frontend_B_test(skills, recommended_careers, embeddings):
         recommendations.append((career, score))
     return recommendations
 
-#Calculating average similarity score for all the profiles
+#Overall similarity scores
 total_scores = []
-total_students = 0
 
 for i, row in students.iterrows():
     output = Frontend_B_test(row["Skills"], final_careers, skills_embedding)
-    #print(f"Student {i+1} recommendations:")
     
-    student_scores = []
-    for career, score in output:
-        #print(f" - {career} ({score:.2f}%)")
-        student_scores.append(score)
+    for _, score in output:
+        total_scores.append(score)
     
-    # Accumulate scores for average calculation
-    if student_scores:  # avoid division by zero
-        total_scores.extend(student_scores)
-        total_students += 1
+overall_avg_B = sum(total_scores) / len(total_scores)
+print(f"Overall average similarity score (Frontend B): {overall_avg_B:.2f}%")
 
-# Calculate and print the average similarity score
-if total_scores:
-    average_score = sum(total_scores) / len(total_scores)
-    print(f"\nAverage similarity score across all profiles: {average_score:.2f}%")
-else:
-    print("No similarity scores found.")
+#Similarity scores distribution for all 100 test profiles 
+average_scores_per_student = []
+
+for _, row in students.iterrows():
+    skills = row["Skills"]
+    output = Frontend_B_test(skills, final_careers, skills_embedding)
+    scores = [score for _, score in output]
+    avg_score = sum(scores) / len(scores)
+    average_scores_per_student.append(avg_score)
+
+df_avg = pd.DataFrame({"Average Similarity Score": average_scores_per_student})
+
+plt.figure(figsize=(10, 6))
+sns.histplot(df_avg["Average Similarity Score"], bins=20, kde=True, color="#2a9d8f")
+plt.title("Average Similarity Score per Student (Frontend B)", fontsize=14)
+plt.xlabel("Average Similarity Score (%)")
+plt.ylabel("Number of Students")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
