@@ -47,6 +47,8 @@ for _, row in renamed_careers.iterrows():
     if career and skill:
         career_skill_map[career].add(skill)
 
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
 #If condition to handle exception when no skills or domain are entered
 if selected_domain and selected_skills:
     
@@ -54,7 +56,6 @@ if selected_domain and selected_skills:
     filtered_skills_embedding = skills_embedding[final_careers["Domain of Interest"] == selected_domain]
 
     #Vectorize user-selected skills
-    model = SentenceTransformer("all-MiniLM-L6-v2")
     selected_skills_string = " ".join(selected_skills)
     selected_skills_embedding = model.encode([selected_skills_string])
 
