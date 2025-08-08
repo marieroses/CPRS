@@ -55,9 +55,6 @@ if selected_skills:
     #Compute cosine similarity between user skills and all careers
     similarities = cosine_similarity(selected_skills_embedding, skills_embedding)[0]
 
-    #Compute cosine similarity between user skills and all careers
-    similarities = cosine_similarity(selected_skills_embedding, skills_embedding)[0]
-
     #Top 3 most similar careers
     top_indices = similarities.argsort()[::-1][:3]
     top_careers = final_careers.iloc[top_indices]
