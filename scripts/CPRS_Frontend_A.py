@@ -70,7 +70,7 @@ if selected_domain and selected_skills:
     top_careers = filtered_careers.iloc[top_indices] 
 
     #Get the actual similarity scores for the top 3 matched careers
-    top_scores = similarities[top_indices]
+    top_scores = similarities[top_indices] 
 
     #Display calculated recommendations and scores to the user
     st.markdown("<u><h2 style='color:#004080;font-size:25px'>Recommended Career Paths:</h2></u>", unsafe_allow_html=True)
@@ -120,4 +120,4 @@ if selected_domain and selected_skills:
     st.link_button("Access here", "https://careersportal.ie/")
 
 else:
-    st.markdown(":red[Start by selecting a domain of interest and up to 7 skills.]")
+    st.markdown(":red[Start by selecting a domain of interest and up to 7 skills.]") 
